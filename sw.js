@@ -7,7 +7,7 @@ const ASSETS = [
   '/icons/icon-512.png'
 ];
 
-// ── Install: cache all assets ──────────────────────────
+// Install: cache all assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,7 +19,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// ── Activate: delete old caches ────────────────────────
+// Activate: delete old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -42,7 +42,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── Fetch: network-first with cache fallback ───────────
+// Fetch: network-first with cache fallback
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith(self.location.origin)) return;

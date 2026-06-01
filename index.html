@@ -4,16 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d2b2b" />
-  <meta name="description" content="PatientSync PWA Test — offline-first clinical documentation demo" />
+  <meta name="description" content="PWATestSync PWA Test" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="PatientSync" />
+  <meta name="apple-mobile-web-app-title" content="PWATestSync" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <title>PatientSync — PWA Test</title>
+  <title>PWATestSync — PWA Test</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -39,7 +39,7 @@
     html { font-family: var(--sans); background: var(--bg); color: var(--text); height: 100%; }
     body { min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ── Header ── */
+    /*  Header  */
     header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 20px;
@@ -78,17 +78,17 @@
     #install-btn:hover { background: var(--accent); color: var(--bg); }
     #install-btn.visible { display: block; }
 
-    /* ── Main ── */
+    /*  Main  */
     main { flex: 1; padding: 20px; max-width: 680px; margin: 0 auto; width: 100%; }
 
-    /* ── Section titles ── */
+    /*  Section titles  */
     .section-label {
       font-family: var(--mono); font-size: 10px; font-weight: 500;
       color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase;
       margin-bottom: 10px; padding-left: 2px;
     }
 
-    /* ── Test Grid ── */
+    /*  Test Grid  */
     .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
     @media (max-width: 480px) { .test-grid { grid-template-columns: 1fr; } }
 
@@ -121,7 +121,7 @@
     .card-result.error { color: var(--red); }
     .card-result.warn { color: var(--amber); }
 
-    /* ── Note Writer ── */
+    /*  Note Writer  */
     .note-panel {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
       padding: 16px; margin-bottom: 24px;
@@ -152,7 +152,7 @@
     .sync-indicator.pending { color: var(--amber); }
     .sync-indicator.synced { color: var(--accent); }
 
-    /* ── Saved Notes ── */
+    /*  Saved Notes  */
     .notes-list { display: flex; flex-direction: column; gap: 8px; }
     .note-item {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
@@ -176,7 +176,7 @@
       color: var(--text3); font-family: var(--mono);
     }
 
-    /* ── Cache Log ── */
+    /*  Cache Log  */
     .cache-log {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
       padding: 14px; margin-bottom: 24px; font-family: var(--mono);
@@ -189,7 +189,7 @@
     .tag-err { background: rgba(248,113,113,0.15); color: var(--red); }
     .tag-info { background: rgba(99,179,237,0.15); color: #63b3ed; }
 
-    /* ── Voice ── */
+    /*  Voice  */
     #voice-btn {
       width: 100%; padding: 12px; border-radius: 8px; border: 1px dashed var(--border);
       background: var(--bg3); color: var(--text2); font-family: var(--mono); font-size: 12px;
@@ -198,12 +198,12 @@
     #voice-btn.recording { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.08); animation: pulse 1s infinite; }
     #voice-btn:hover:not(.recording) { border-color: var(--accent); color: var(--accent); }
 
-    /* ── Camera ── */
+    /*  Camera  */
     #camera-result { margin-top: 10px; }
     #camera-result img { width: 100%; border-radius: 8px; border: 1px solid var(--border); display: none; max-height: 200px; object-fit: cover; }
     #camera-input { display: none; }
 
-    /* ── Toast ── */
+    /*  Toast  */
     #toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
       background: var(--surface); border: 1px solid var(--accent);
@@ -214,7 +214,7 @@
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* ── Footer ── */
+    /*  Footer  */
     footer {
       text-align: center; padding: 14px;
       font-family: var(--mono); font-size: 10px; color: var(--text3);
@@ -227,7 +227,7 @@
 <header>
   <div class="logo">
     <div class="logo-mark">Ps</div>
-    <div class="logo-name">Patient<span>Sync</span></div>
+    <div class="logo-name">PWATest<span>Sync</span></div>
   </div>
   <div class="status-bar">
     <div class="status-pill" id="status-pill">
@@ -241,9 +241,9 @@
 <main>
 
   <!-- Note Writer -->
-  <div class="section-label">patient note</div>
+  <div class="section-label">Test note</div>
   <div class="note-panel">
-    <textarea id="note-input" placeholder="Type a patient note… (works fully offline)"></textarea>
+    <textarea id="note-input" placeholder="Type a Test note… (works fully offline)"></textarea>
     <div class="note-actions">
       <button class="btn-primary" onclick="saveNote()">save note</button>
       <button class="btn-secondary" id="voice-btn" onclick="toggleVoice()">🎙 dictate</button>
@@ -340,19 +340,19 @@
 
 </main>
 
-<footer>PatientSync PWA Test · built with vanilla JS + service worker · no framework</footer>
+<footer>TestSync PWA Test · built with vanilla JS + service worker · no framework</footer>
 <div id="toast"></div>
 
 <script>
-// ── State ──────────────────────────────────────────────
+//  State 
 let deferredPrompt = null;
 let recognition = null;
 let isRecording = false;
-const DB_NAME = 'patientsync';
+const DB_NAME = 'Testsync';
 const DB_VERSION = 1;
 let db = null;
 
-// ── IndexedDB init ─────────────────────────────────────
+//  IndexedDB init ─
 function openDB() {
   return new Promise((res, rej) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -394,7 +394,7 @@ function idbDelete(id) {
   });
 }
 
-// ── Notes UI ───────────────────────────────────────────
+//  Notes UI ─
 async function saveNote() {
   const input = document.getElementById('note-input');
   const img = document.getElementById('captured-img');
@@ -466,7 +466,7 @@ function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ── Camera ─────────────────────────────────────────────
+//  Camera ─
 function captureImage(input) {
   const file = input.files[0];
   if (!file) return;
@@ -480,7 +480,7 @@ function captureImage(input) {
   reader.readAsDataURL(file);
 }
 
-// ── Voice ──────────────────────────────────────────────
+//  Voice 
 function toggleVoice() {
   const btn = document.getElementById('voice-btn');
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -517,7 +517,7 @@ function toggleVoice() {
   recognition.start();
 }
 
-// ── Online / offline ───────────────────────────────────
+//  Online / offline ─
 function updateStatus() {
   const dot = document.getElementById('status-dot');
   const txt = document.getElementById('status-text');
@@ -549,7 +549,7 @@ async function syncPendingNotes() {
   }
 }
 
-// ── Feature tests ──────────────────────────────────────
+//  Feature tests 
 function testOffline() {
   const r = document.getElementById('r-offline');
   r.className = 'card-result';
@@ -623,7 +623,7 @@ async function testNotif() {
   r.className = perm === 'granted' ? 'card-result' : 'card-result warn';
   r.textContent = perm === 'granted' ? '✓ granted — sending test…' : `⚠ ${perm}`;
   if (perm === 'granted') {
-    new Notification('PatientSync', { body: 'Dr. Reyes updated Patient #302', icon: '/icons/icon-192.png' });
+    new Notification('TestSync', { body: 'Dr. Reyes updated Test #302', icon: '/icons/icon-192.png' });
   }
 }
 
@@ -638,7 +638,7 @@ function testInstall() {
   }
 }
 
-// ── Install ────────────────────────────────────────────
+//  Install 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
@@ -661,7 +661,7 @@ window.addEventListener('appinstalled', () => {
   showToast('installed!');
 });
 
-// ── Logging ────────────────────────────────────────────
+//  Logging 
 function addLog(type, msg) {
   const log = document.getElementById('cache-log');
   const entry = document.createElement('div');
@@ -675,7 +675,7 @@ function addLog(type, msg) {
   if (log.children.length > 10) log.removeChild(log.lastChild);
 }
 
-// ── Toast ──────────────────────────────────────────────
+//  Toast 
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -683,7 +683,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ── Service Worker registration ────────────────────────
+//  Service Worker registration 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
@@ -702,7 +702,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ── Init ───────────────────────────────────────────────
+//  Init ─
 window.addEventListener('online', updateStatus);
 window.addEventListener('offline', updateStatus);
 
