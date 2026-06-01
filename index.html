@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d2b2b" />
+  <meta name="description" content="PatientSync PWA Test — offline-first clinical documentation demo" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PatientSync" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>PatientSync — PWA Test</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a1f1f;
+      --bg2: #0f2a2a;
+      --bg3: #143333;
+      --surface: #1a3d3d;
+      --border: #1f4a4a;
+      --accent: #2dd4a0;
+      --accent2: #1aa87e;
+      --accent-dim: rgba(45,212,160,0.12);
+      --accent-glow: rgba(45,212,160,0.06);
+      --text: #e8f5f0;
+      --text2: #8bb8ac;
+      --text3: #4d7a6e;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --mono: 'DM Mono', monospace;
+      --sans: 'Sora', sans-serif;
+    }
+
+    html { font-family: var(--sans); background: var(--bg); color: var(--text); height: 100%; }
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent-dim); border: 1px solid var(--accent);
+      display: grid; place-items: center;
+      font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500;
+    }
+    .logo-name { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+    .logo-name span { color: var(--accent); }
+
+    .status-bar { display: flex; align-items: center; gap: 8px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    .status-dot.offline { background: var(--red); animation: none; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    #install-btn {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      padding: 5px 12px; border-radius: 6px; cursor: pointer;
+      background: var(--accent-dim); border: 1px solid var(--accent);
+      color: var(--accent); display: none; transition: all 0.2s;
+    }
+    #install-btn:hover { background: var(--accent); color: var(--bg); }
+    #install-btn.visible { display: block; }
+
+    /* ── Main ── */
+    main { flex: 1; padding: 20px; max-width: 680px; margin: 0 auto; width: 100%; }
+
+    /* ── Section titles ── */
+    .section-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 10px; padding-left: 2px;
+    }
+
+    /* ── Test Grid ── */
+    .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 480px) { .test-grid { grid-template-columns: 1fr; } }
+
+    .test-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .test-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent); opacity: 0; transition: opacity 0.2s;
+    }
+    .test-card:hover { border-color: var(--accent); background: var(--bg3); }
+    .test-card:hover::before { opacity: 1; }
+    .test-card:active { transform: scale(0.98); }
+
+    .card-icon { font-size: 20px; margin-bottom: 8px; }
+    .card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+    .card-desc { font-size: 11px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+    .card-btn {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer;
+      background: var(--accent-dim); color: var(--accent); transition: all 0.2s;
+      display: inline-block;
+    }
+    .card-btn:hover { background: var(--accent); color: var(--bg); }
+    .card-result {
+      margin-top: 8px; font-family: var(--mono); font-size: 11px;
+      color: var(--accent); min-height: 16px; word-break: break-all; line-height: 1.5;
+    }
+    .card-result.error { color: var(--red); }
+    .card-result.warn { color: var(--amber); }
+
+    /* ── Note Writer ── */
+    .note-panel {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-bottom: 24px;
+    }
+    .note-panel textarea {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: var(--sans); font-size: 13px; line-height: 1.6;
+      padding: 12px; resize: none; height: 90px; outline: none; transition: border-color 0.2s;
+    }
+    .note-panel textarea::placeholder { color: var(--text3); }
+    .note-panel textarea:focus { border-color: var(--accent); }
+    .note-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .btn-primary {
+      font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 7px 16px;
+      border-radius: 7px; border: none; cursor: pointer;
+      background: var(--accent); color: var(--bg); transition: all 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-secondary {
+      font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 7px 14px;
+      border-radius: 7px; cursor: pointer;
+      background: transparent; border: 1px solid var(--border); color: var(--text2); transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .sync-indicator {
+      font-family: var(--mono); font-size: 11px; color: var(--text3); margin-left: auto;
+    }
+    .sync-indicator.pending { color: var(--amber); }
+    .sync-indicator.synced { color: var(--accent); }
+
+    /* ── Saved Notes ── */
+    .notes-list { display: flex; flex-direction: column; gap: 8px; }
+    .note-item {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .note-sync-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+    }
+    .note-sync-dot.pending { background: var(--amber); }
+    .note-sync-dot.synced { background: var(--accent); }
+    .note-body { flex: 1; min-width: 0; }
+    .note-text { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 4px; word-break: break-word; }
+    .note-meta { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+    .note-delete {
+      font-size: 14px; background: none; border: none; cursor: pointer;
+      color: var(--text3); padding: 2px 4px; border-radius: 4px; transition: color 0.2s; flex-shrink: 0;
+    }
+    .note-delete:hover { color: var(--red); }
+    .empty-state {
+      text-align: center; padding: 28px 0; font-size: 12px;
+      color: var(--text3); font-family: var(--mono);
+    }
+
+    /* ── Cache Log ── */
+    .cache-log {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; margin-bottom: 24px; font-family: var(--mono);
+    }
+    .log-entry { font-size: 11px; color: var(--text2); padding: 3px 0; border-bottom: 1px solid var(--border); line-height: 1.6; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-entry .tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; margin-right: 5px; }
+    .tag-ok { background: rgba(45,212,160,0.15); color: var(--accent); }
+    .tag-warn { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .tag-err { background: rgba(248,113,113,0.15); color: var(--red); }
+    .tag-info { background: rgba(99,179,237,0.15); color: #63b3ed; }
+
+    /* ── Voice ── */
+    #voice-btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px dashed var(--border);
+      background: var(--bg3); color: var(--text2); font-family: var(--mono); font-size: 12px;
+      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    #voice-btn.recording { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.08); animation: pulse 1s infinite; }
+    #voice-btn:hover:not(.recording) { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Camera ── */
+    #camera-result { margin-top: 10px; }
+    #camera-result img { width: 100%; border-radius: 8px; border: 1px solid var(--border); display: none; max-height: 200px; object-fit: cover; }
+    #camera-input { display: none; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--surface); border: 1px solid var(--accent);
+      color: var(--text); font-family: var(--mono); font-size: 12px;
+      padding: 10px 18px; border-radius: 8px; z-index: 999;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center; padding: 14px;
+      font-family: var(--mono); font-size: 10px; color: var(--text3);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">Ps</div>
+    <div class="logo-name">Patient<span>Sync</span></div>
+  </div>
+  <div class="status-bar">
+    <div class="status-pill" id="status-pill">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">online</span>
+    </div>
+    <button id="install-btn" onclick="installPWA()">+ install</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Note Writer -->
+  <div class="section-label">patient note</div>
+  <div class="note-panel">
+    <textarea id="note-input" placeholder="Type a patient note… (works fully offline)"></textarea>
+    <div class="note-actions">
+      <button class="btn-primary" onclick="saveNote()">save note</button>
+      <button class="btn-secondary" id="voice-btn" onclick="toggleVoice()">🎙 dictate</button>
+      <button class="btn-secondary" onclick="document.getElementById('camera-input').click()">📷 capture</button>
+      <span class="sync-indicator" id="sync-indicator">—</span>
+    </div>
+    <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="captureImage(this)" />
+    <div id="camera-result"><img id="captured-img" alt="Captured" /></div>
+  </div>
+
+  <!-- Saved Notes -->
+  <div class="section-label">saved notes</div>
+  <div class="notes-list" id="notes-list">
+    <div class="empty-state" id="empty-state">no notes yet — save one above</div>
+  </div>
+
+  <br />
+
+  <!-- PWA Feature Tests -->
+  <div class="section-label">pwa feature tests</div>
+  <div class="test-grid">
+
+    <div class="test-card">
+      <div class="card-icon">📡</div>
+      <div class="card-title">Offline detection</div>
+      <div class="card-desc">Detects network status in real time.</div>
+      <button class="card-btn" onclick="testOffline()">test</button>
+      <div class="card-result" id="r-offline"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">🗄️</div>
+      <div class="card-title">IndexedDB storage</div>
+      <div class="card-desc">Local database — survives page close.</div>
+      <button class="card-btn" onclick="testIndexedDB()">test</button>
+      <div class="card-result" id="r-idb"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Service worker</div>
+      <div class="card-desc">Background script enabling offline mode.</div>
+      <button class="card-btn" onclick="testSW()">test</button>
+      <div class="card-result" id="r-sw"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">💾</div>
+      <div class="card-title">Cache storage</div>
+      <div class="card-desc">Lists cached assets available offline.</div>
+      <button class="card-btn" onclick="testCache()">test</button>
+      <div class="card-result" id="r-cache"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">🎙️</div>
+      <div class="card-title">Voice dictation</div>
+      <div class="card-desc">Web Speech API — type by talking.</div>
+      <button class="card-btn" onclick="testVoice()">test</button>
+      <div class="card-result" id="r-voice"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">📷</div>
+      <div class="card-title">Camera access</div>
+      <div class="card-desc">Capture images directly from device.</div>
+      <button class="card-btn" onclick="testCamera()">test</button>
+      <div class="card-result" id="r-camera"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">🔔</div>
+      <div class="card-title">Notifications</div>
+      <div class="card-desc">Push alerts for care team updates.</div>
+      <button class="card-btn" onclick="testNotif()">test</button>
+      <div class="card-result" id="r-notif"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="card-icon">📲</div>
+      <div class="card-title">Install prompt</div>
+      <div class="card-desc">Add to home screen detection.</div>
+      <button class="card-btn" onclick="testInstall()">test</button>
+      <div class="card-result" id="r-install"></div>
+    </div>
+
+  </div>
+
+  <!-- Cache Log -->
+  <div class="section-label">service worker log</div>
+  <div class="cache-log" id="cache-log">
+    <div class="log-entry"><span class="tag tag-info">info</span> Waiting for service worker events…</div>
+  </div>
+
+</main>
+
+<footer>PatientSync PWA Test · built with vanilla JS + service worker · no framework</footer>
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let deferredPrompt = null;
+let recognition = null;
+let isRecording = false;
+const DB_NAME = 'patientsync';
+const DB_VERSION = 1;
+let db = null;
+
+// ── IndexedDB init ─────────────────────────────────────
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('notes')) {
+        d.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function idbGetAll() {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('notes', 'readonly');
+    const req = tx.objectStore('notes').getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function idbAdd(note) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('notes', 'readwrite');
+    const req = tx.objectStore('notes').add(note);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function idbDelete(id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('notes', 'readwrite');
+    const req = tx.objectStore('notes').delete(id);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+
+// ── Notes UI ───────────────────────────────────────────
+async function saveNote() {
+  const input = document.getElementById('note-input');
+  const img = document.getElementById('captured-img');
+  const text = input.value.trim();
+  if (!text) { showToast('write something first'); return; }
+
+  const note = {
+    text,
+    image: img.src && img.style.display !== 'none' ? img.src : null,
+    timestamp: new Date().toISOString(),
+    synced: navigator.onLine
+  };
+
+  await idbAdd(note);
+  input.value = '';
+  img.style.display = 'none';
+
+  const indicator = document.getElementById('sync-indicator');
+  if (navigator.onLine) {
+    indicator.textContent = '✓ synced';
+    indicator.className = 'sync-indicator synced';
+    showToast('note saved + synced');
+  } else {
+    indicator.textContent = '⏳ pending sync';
+    indicator.className = 'sync-indicator pending';
+    showToast('saved offline — will sync when online');
+  }
+
+  await renderNotes();
+}
+
+async function renderNotes() {
+  const list = document.getElementById('notes-list');
+  const empty = document.getElementById('empty-state');
+  const notes = await idbGetAll();
+
+  if (!notes.length) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+
+  [...notes].reverse().forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'note-item';
+    div.innerHTML = `
+      <div class="note-sync-dot ${n.synced ? 'synced' : 'pending'}"></div>
+      <div class="note-body">
+        <div class="note-text">${escHtml(n.text)}</div>
+        ${n.image ? `<img src="${n.image}" style="width:100%;border-radius:6px;margin-top:6px;max-height:120px;object-fit:cover;" />` : ''}
+        <div class="note-meta">${new Date(n.timestamp).toLocaleString()} · ${n.synced ? '✓ synced' : '⏳ pending'}</div>
+      </div>
+      <button class="note-delete" onclick="deleteNote(${n.id})" title="delete">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function deleteNote(id) {
+  await idbDelete(id);
+  await renderNotes();
+  showToast('note deleted');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Camera ─────────────────────────────────────────────
+function captureImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('captured-img');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    showToast('photo attached');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Voice ──────────────────────────────────────────────
+function toggleVoice() {
+  const btn = document.getElementById('voice-btn');
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('Speech API not supported on this browser');
+    return;
+  }
+  if (isRecording) {
+    recognition.stop();
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-PH';
+
+  recognition.onstart = () => {
+    isRecording = true;
+    btn.classList.add('recording');
+    btn.textContent = '🔴 recording…';
+  };
+  recognition.onresult = e => {
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    document.getElementById('note-input').value = transcript;
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    btn.classList.remove('recording');
+    btn.innerHTML = '🎙 dictate';
+  };
+  recognition.start();
+}
+
+// ── Online / offline ───────────────────────────────────
+function updateStatus() {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  if (navigator.onLine) {
+    dot.classList.remove('offline');
+    txt.textContent = 'online';
+    addLog('info', 'Network restored — pending notes can sync');
+    syncPendingNotes();
+  } else {
+    dot.classList.add('offline');
+    txt.textContent = 'offline';
+    addLog('warn', 'Network lost — notes will save locally');
+    showToast('you are offline — notes still save');
+  }
+}
+
+async function syncPendingNotes() {
+  if (!db) return;
+  const notes = await idbGetAll();
+  const pending = notes.filter(n => !n.synced);
+  if (pending.length) {
+    addLog('ok', `Syncing ${pending.length} pending note(s)…`);
+    for (const n of pending) {
+      const tx = db.transaction('notes', 'readwrite');
+      tx.objectStore('notes').put({ ...n, synced: true });
+    }
+    await renderNotes();
+    showToast(`${pending.length} note(s) synced`);
+  }
+}
+
+// ── Feature tests ──────────────────────────────────────
+function testOffline() {
+  const r = document.getElementById('r-offline');
+  r.className = 'card-result';
+  r.textContent = navigator.onLine ? '✓ online — try airplane mode' : '✓ offline detected correctly';
+  if (!navigator.onLine) r.className = 'card-result warn';
+}
+
+async function testIndexedDB() {
+  const r = document.getElementById('r-idb');
+  try {
+    const notes = await idbGetAll();
+    r.className = 'card-result';
+    r.textContent = `✓ working — ${notes.length} note(s) stored`;
+  } catch(e) {
+    r.className = 'card-result error';
+    r.textContent = '✗ ' + e.message;
+  }
+}
+
+async function testSW() {
+  const r = document.getElementById('r-sw');
+  if (!('serviceWorker' in navigator)) {
+    r.className = 'card-result error'; r.textContent = '✗ not supported'; return;
+  }
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (reg) {
+    r.className = 'card-result';
+    const s = reg.active ? 'active' : reg.installing ? 'installing' : 'waiting';
+    r.textContent = `✓ registered (${s})`;
+  } else {
+    r.className = 'card-result warn'; r.textContent = '⚠ not registered yet';
+  }
+}
+
+async function testCache() {
+  const r = document.getElementById('r-cache');
+  if (!('caches' in window)) {
+    r.className = 'card-result error'; r.textContent = '✗ not supported'; return;
+  }
+  const keys = await caches.keys();
+  if (keys.length) {
+    const cache = await caches.open(keys[0]);
+    const reqs = await cache.keys();
+    r.className = 'card-result';
+    r.textContent = `✓ ${keys.length} cache(s), ${reqs.length} asset(s)`;
+  } else {
+    r.className = 'card-result warn'; r.textContent = '⚠ no caches yet';
+  }
+}
+
+function testVoice() {
+  const r = document.getElementById('r-voice');
+  const supported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+  r.className = supported ? 'card-result' : 'card-result error';
+  r.textContent = supported ? '✓ Web Speech API available' : '✗ not supported (use Chrome)';
+}
+
+function testCamera() {
+  const r = document.getElementById('r-camera');
+  const supported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  r.className = supported ? 'card-result' : 'card-result error';
+  r.textContent = supported ? '✓ Camera API available' : '✗ not available';
+}
+
+async function testNotif() {
+  const r = document.getElementById('r-notif');
+  if (!('Notification' in window)) {
+    r.className = 'card-result error'; r.textContent = '✗ not supported'; return;
+  }
+  const perm = await Notification.requestPermission();
+  r.className = perm === 'granted' ? 'card-result' : 'card-result warn';
+  r.textContent = perm === 'granted' ? '✓ granted — sending test…' : `⚠ ${perm}`;
+  if (perm === 'granted') {
+    new Notification('PatientSync', { body: 'Dr. Reyes updated Patient #302', icon: '/icons/icon-192.png' });
+  }
+}
+
+function testInstall() {
+  const r = document.getElementById('r-install');
+  if (deferredPrompt) {
+    r.className = 'card-result'; r.textContent = '✓ install prompt ready — click + install in header';
+  } else if (window.matchMedia('(display-mode: standalone)').matches) {
+    r.className = 'card-result'; r.textContent = '✓ already installed as PWA';
+  } else {
+    r.className = 'card-result warn'; r.textContent = '⚠ not yet — open in Chrome on Android';
+  }
+}
+
+// ── Install ────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').classList.add('visible');
+  addLog('ok', 'Install prompt captured — app is installable');
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r => {
+    addLog(r.outcome === 'accepted' ? 'ok' : 'warn', `Install: ${r.outcome}`);
+    deferredPrompt = null;
+    document.getElementById('install-btn').classList.remove('visible');
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  addLog('ok', 'App installed to home screen successfully');
+  showToast('installed!');
+});
+
+// ── Logging ────────────────────────────────────────────
+function addLog(type, msg) {
+  const log = document.getElementById('cache-log');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const time = new Date().toLocaleTimeString();
+  entry.innerHTML = `<span class="tag tag-${type}">${type}</span><span style="color:var(--text3);margin-right:6px">${time}</span>${msg}`;
+  if (log.children.length === 1 && log.children[0].textContent.includes('Waiting')) {
+    log.innerHTML = '';
+  }
+  log.prepend(entry);
+  if (log.children.length > 10) log.removeChild(log.lastChild);
+}
+
+// ── Toast ──────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Service Worker registration ────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        addLog('ok', `Service worker registered (scope: ${reg.scope})`);
+        reg.addEventListener('updatefound', () => {
+          addLog('info', 'New service worker installing…');
+        });
+      })
+      .catch(err => addLog('err', 'SW registration failed: ' + err));
+  });
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'CACHE_UPDATED') {
+      addLog('ok', 'Cache updated with new assets');
+    }
+  });
+}
+
+// ── Init ───────────────────────────────────────────────
+window.addEventListener('online', updateStatus);
+window.addEventListener('offline', updateStatus);
+
+openDB().then(() => {
+  renderNotes();
+  addLog('ok', 'IndexedDB opened successfully');
+  updateStatus();
+});
+</script>
+</body>
+</html>
